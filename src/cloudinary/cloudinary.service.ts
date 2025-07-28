@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+import * as streamifier from 'streamifier';
 import { config } from 'dotenv';
 config();
 
@@ -19,10 +20,12 @@ export class CloudinaryService {
           allowed_formats: ['jpg', 'png'],
         },
         (error, result: UploadApiResponse) => {
-          if (error) return reject(error);
+          if (error) return reject(new Error(error.message));
           resolve(result.secure_url);
         },
       );
+      const stream = streamifier.createReadStream(file.buffer);
+      stream.pipe(uploadStream);
     });
   }
 }
