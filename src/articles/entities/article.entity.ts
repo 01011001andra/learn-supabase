@@ -3,11 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ArticleStatus } from '../interface/article.interface';
 import { Category } from 'src/category/entities/category.entity';
 import { User } from 'src/auth/entities/user.entity';
+import { ArticleTag } from 'src/articletag/entities/articletag.entity';
+import { Comment } from 'src/comment/entities/comment.entity';
 
 @Entity()
 export class Article {
@@ -43,6 +46,12 @@ export class Article {
 
   @Column({ type: 'uuid' })
   userId: string;
+
+  @OneToMany(() => ArticleTag, (articleTag) => articleTag.article)
+  articleTags: ArticleTag[];
+
+  @OneToMany(() => Comment, (comment) => comment.article)
+  comments: Comment[];
 
   @CreateDateColumn()
   readonly createdAt: Date;

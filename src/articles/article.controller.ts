@@ -9,6 +9,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   Request,
   UploadedFile,
   UseGuards,
@@ -24,14 +25,23 @@ import { RolesGuard } from 'src/auth/guard/role.guard';
 import { Roles } from 'src/auth/decolators/roles.decolator';
 import { Role } from 'src/auth/enum/role.enum';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ArticleQueryDto } from './dto/article-query.dto';
+import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
 
 @Controller('article')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
 
   @Get()
-  async findAll(): Promise<Article[]> {
-    return await this.articleService.findAllArticle();
+  async findAll(@Query() query: ArticleQueryDto) {
+    return await this.articleService.findAllArticle(query);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Get('/user')
+  async findArticleUser(@Request() req, @Query() query: ArticleQueryDto) {
+    const article = await this.articleService.articleByUser(req.user.id, query);
+    return article;
   }
 
   @Get('/:id')
@@ -42,6 +52,11 @@ export class ArticleController {
   @UseGuards(AuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   @Post()
+  @ApiBearerAuth()
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    type: createArticleDto,
+  })
   @UseInterceptors(FileInterceptor('image'))
   async create(
     @Request() req,

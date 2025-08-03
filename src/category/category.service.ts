@@ -22,7 +22,40 @@ export class CategoryService {
   }
 
   async findOne(id: string): Promise<Category | null> {
-    return await this.CategoryRepository.findOne({ where: { id } });
+    return await this.CategoryRepository.findOne({
+      where: { id },
+      relations: [
+        'articles',
+        'articles.user',
+        'articles.articleTags',
+        'articles.articleTags.tag',
+      ],
+      select: {
+        id: true,
+        name: true,
+        articles: {
+          id: true,
+          title: true,
+          content: true,
+          status: true,
+          image: true,
+          createdAt: true,
+          updatedAt: true,
+          user: {
+            id: true,
+            email: true,
+            role: true,
+          },
+          articleTags: {
+            id: true,
+            tag: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      },
+    });
   }
 
   async update(
